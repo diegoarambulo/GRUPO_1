@@ -5,4 +5,4 @@ Carpeta de audios
 Manuales sucios y complementarios
 
 
-estan dentro de la carpeta data y deberan ser cargados al contexto del colab para correr el pipeline
+estan dentro de la carpeta data de la semana 4 en el repositorio del grupo # 1 y deberan ser cargados al contexto del colab para correr el pipeline

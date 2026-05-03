@@ -1,0 +1,56 @@
+FROM python:3.12-slim
+
+LABEL description="NLP container: spaCy + XLM-RoBERTa + WikiNeural + Qwen2.5 + FastAPI"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/app/.cache/huggingface \
+    TRANSFORMERS_CACHE=/app/.cache/huggingface \
+    PIP_INDEX_URL=https://pypi.org/simple \
+    PIP_TRUSTED_HOST="pypi.org files.pythonhosted.org" \
+    TOKENIZERS_PARALLELISM=false \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc g++ curl libgomp1 ca-certificates ffmpeg \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY pip.conf /etc/pip.conf
+
+RUN pip install --upgrade pip
+
+RUN pip install spacy==3.8.9
+
+RUN pip install \
+    transformers \
+    huggingface_hub \
+    sentencepiece \
+    protobuf \
+    accelerate \
+    fastapi \
+    "uvicorn[standard]" \
+    python-multipart \
+    nest_asyncio \
+    pyngrok \
+    SpeechRecognition \
+    pydub \
+    scikit-learn \
+    seaborn \
+    matplotlib
+
+RUN pip install torch \
+    --index-url https://download.pytorch.org/whl/cpu
+
+RUN python -m spacy download es_core_news_lg
+
+
+COPY src/ /app/src/
+
+EXPOSE 8000
+
+# ✅ El archivo ejecutable es ngrokHandler.py dentro de src
+CMD ["python", "src/ngrokHandler.py"]
