@@ -42,14 +42,16 @@ async def search_by_text(query: TextQuery):
         _flow_runner = FlowRunner()
 
     logger.info(f"Recibida solicitud de búsqueda por texto: {query.text}")
-    normalized_text = normalize_content(query.text)
-    resultado = _flow_runner.procesar_consulta(normalized_text)
+    #normalized_text = normalize_content(query.text)
+    normalized_text = query.text
+
+    response = _flow_runner.procesar_consulta(normalized_text)
 
     return {
-        "message": normalized_text,
         "query": query.text,
-        "resultado": resultado,
-        "results": []
+        "resultado": response["result"],
+        "tipo": response["type"],
+        "modelResponse": response["modelResponse"],
     }
 
 @app.post("/document/search/byVoice")

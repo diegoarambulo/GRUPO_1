@@ -2,14 +2,14 @@
 
 # Documentación de API: Búsqueda Global de Documentos
 
-Esta documentación detalla el uso del endpoint `/documents/searchAll` para la recuperación de entidades de archivos basadas en criterios de búsqueda específicos.
+Esta documentación detalla el uso del endpoint `/api/file/filedynamicsearch` para la recuperación de entidades de archivos basadas en criterios de búsqueda específicos.
 
 ---
 
 ## 📌 Información General
 
-* **Endpoint:** `/documents/searchAll`
-* **Método HTTP:** `GET`
+* **Endpoint completo:** `https://www.centralfile-sisadcloud.com:11431/api/file/filedynamicsearch`
+* **Método HTTP:** `POST`
 * **Autenticación:** No requerida
 * **Formato de Request:** JSON
 * **Formato de Response:** JSON

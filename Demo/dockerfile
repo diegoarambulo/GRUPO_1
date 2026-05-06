@@ -27,6 +27,7 @@ RUN pip install spacy==3.8.9
 
 RUN pip install \
     transformers \
+    sentence-transformers \
     huggingface_hub \
     sentencepiece \
     protobuf \
@@ -40,7 +41,9 @@ RUN pip install \
     pydub \
     scikit-learn \
     seaborn \
-    matplotlib
+    matplotlib \
+    langchain-core \
+    faiss-cpu
 
 RUN pip install torch \
     --index-url https://download.pytorch.org/whl/cpu

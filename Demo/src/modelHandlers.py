@@ -1,6 +1,7 @@
 import os
 import logging
 import threading
+import pickle
 
 # ✅ CRÍTICO: variables de entorno ANTES de cualquier import de torch/transformers
 os.environ["TOKENIZERS_PARALLELISM"]  = "false"
@@ -16,7 +17,9 @@ import torch
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
 
+import faiss
 import spacy
+from sentence_transformers import SentenceTransformer
 from transformers import (
     pipeline,
     AutoModelForSequenceClassification,
@@ -30,9 +33,14 @@ logger = logging.getLogger(__name__)
 
 HF_HOME = os.environ.get("HF_HOME", os.path.join(os.path.expanduser("~"), ".cache", "huggingface"))
 
-MODELO_INTENCION = "vicgalle/xlm-roberta-large-xnli-anli"
-MODELO_NER       = "Babelscape/wikineural-multilingual-ner"
-MODELO_QWEN      = "Qwen/Qwen2.5-1.5B-Instruct"
+MODELO_INTENCION  = "vicgalle/xlm-roberta-large-xnli-anli"
+MODELO_NER        = "Babelscape/wikineural-multilingual-ner"
+MODELO_QWEN       = "Qwen/Qwen2.5-1.5B-Instruct"
+MODELO_EMBED      = "paraphrase-multilingual-MiniLM-L12-v2"
+
+# ✅ Paths de los archivos FAISS — sobreescribibles por variable de entorno
+FAISS_INDEX_PATH  = os.environ.get("FAISS_INDEX_PATH",  "/app/.cache/rag_content/sisad_chunks.faiss")
+FAISS_CHUNKS_PATH = os.environ.get("FAISS_CHUNKS_PATH", "/app/.cache/rag_content/sisad_chunks.pkl")
 
 logger.info(f"📦 HF_HOME            : {HF_HOME}")
 logger.info(f"🔒 TRANSFORMERS_OFFLINE: {os.environ['TRANSFORMERS_OFFLINE']}")
@@ -48,6 +56,9 @@ class ModelHandlers:
     _extractor_ner          = None
     _qwen_model             = None
     _qwen_tokenizer         = None
+    _faiss_index            = None
+    _faiss_chunks           = None
+    _embed_model            = None
     _modelos_cargados       = False
 
     @classmethod
@@ -71,7 +82,7 @@ class ModelHandlers:
             # ── XLM-RoBERTa ───────────────────────────────────────────────────
             try:
                 logger.info(f"⏳ Cargando clasificador de intención: {MODELO_INTENCION}")
-                tok = AutoTokenizer.from_pretrained(MODELO_INTENCION, local_files_only=True)
+                tok = AutoTokenizer.from_pretrained(MODELO_INTENCION, local_files_only=True, fix_mistral_regex=True)
                 mod = AutoModelForSequenceClassification.from_pretrained(MODELO_INTENCION, local_files_only=True)
                 cls._clasificador_intencion = pipeline(
                     "zero-shot-classification",
@@ -79,6 +90,7 @@ class ModelHandlers:
                     tokenizer=tok,
                     device=-1,
                     num_workers=0,
+                    multi_label=False,
                 )
                 logger.info("✅ Clasificador de intención cargado.")
             except Exception as e:
@@ -115,6 +127,31 @@ class ModelHandlers:
                 logger.info("✅ Qwen2.5-1.5B-Instruct cargado.")
             except Exception as e:
                 logger.error(f"❌ Error al cargar Qwen: {e}")
+
+            # ── FAISS Index ───────────────────────────────────────────────────
+            try:
+                logger.info(f"⏳ Cargando índice FAISS: {FAISS_INDEX_PATH}")
+                cls._faiss_index = faiss.read_index(FAISS_INDEX_PATH)
+                logger.info(f"✅ Índice FAISS cargado: {cls._faiss_index.ntotal} vectores.")
+            except Exception as e:
+                logger.error(f"❌ Error al cargar índice FAISS: {e}")
+
+            # ── FAISS Chunks ──────────────────────────────────────────────────
+            try:
+                logger.info(f"⏳ Cargando chunks: {FAISS_CHUNKS_PATH}")
+                with open(FAISS_CHUNKS_PATH, 'rb') as f:
+                    cls._faiss_chunks = pickle.load(f)
+                logger.info(f"✅ Chunks cargados: {len(cls._faiss_chunks)} chunks.")
+            except Exception as e:
+                logger.error(f"❌ Error al cargar chunks: {e}")
+
+            # ── Modelo de Embeddings (SentenceTransformer) ────────────────────
+            try:
+                logger.info(f"⏳ Cargando modelo de embeddings: {MODELO_EMBED}")
+                cls._embed_model = SentenceTransformer(MODELO_EMBED)
+                logger.info("✅ Modelo de embeddings cargado.")
+            except Exception as e:
+                logger.error(f"❌ Error al cargar modelo de embeddings: {e}")
 
             cls._modelos_cargados = True
             logger.info("✅ Proceso de carga de modelos completado.")
@@ -160,3 +197,27 @@ class ModelHandlers:
         if cls._qwen_tokenizer is None:
             raise RuntimeError(f"Tokenizer Qwen '{MODELO_QWEN}' no pudo ser cargado.")
         return cls._qwen_tokenizer
+
+    @classmethod
+    def get_faiss_index(cls):
+        if not cls._modelos_cargados:
+            cls.load_models()
+        if cls._faiss_index is None:
+            raise RuntimeError(f"Índice FAISS '{FAISS_INDEX_PATH}' no pudo ser cargado.")
+        return cls._faiss_index
+
+    @classmethod
+    def get_faiss_chunks(cls):
+        if not cls._modelos_cargados:
+            cls.load_models()
+        if cls._faiss_chunks is None:
+            raise RuntimeError(f"Chunks FAISS '{FAISS_CHUNKS_PATH}' no pudieron ser cargados.")
+        return cls._faiss_chunks
+
+    @classmethod
+    def get_embed_model(cls):
+        if not cls._modelos_cargados:
+            cls.load_models()
+        if cls._embed_model is None:
+            raise RuntimeError(f"Modelo de embeddings '{MODELO_EMBED}' no pudo ser cargado.")
+        return cls._embed_model
