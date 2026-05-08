@@ -3,16 +3,37 @@ from modelHandlers import ModelHandlers
 from dateExtractor import extraer_fechas
 from ragHandler import RagHandlers
 from documentHandler import DocumentHandler
+from TextUtils import es_cedula_ecuatoriana
 
 # Inicialización global
 _ragHandler = None
 _documentHandler = None
 
-PATRON_RUC       = re.compile(r'\b\d{13}\b')
-PATRON_CEDULA    = re.compile(r'\b\d{10}\b')
-PATRON_NUM_LARGO = re.compile(r'\b\d{6,}\b')
+PATRON_RUC        = re.compile(r'\b\d{13}\b')
+PATRON_10_DIGITOS = re.compile(r'\b\d{10}\b')
+PATRON_NUM_LARGO  = re.compile(r'\b\d{6,}\b')
 
-# ✅ Keywords para clasificar el type de respuesta
+# ✅ Provincias ecuatorianas válidas (01-24) para validar cédula
+PROVINCIAS_EC = {str(i).zfill(2) for i in range(1, 25)}
+
+# ✅ Contexto textual para distinguir cédula vs teléfono
+CONTEXTO_CEDULA = re.compile(
+    r'(?:cedula|cédula|identificacion|identificación|ci|dni|documento de identidad|numero de id)\D{0,30}(\d{10})',
+    re.IGNORECASE
+)
+CONTEXTO_TELEFONO = re.compile(
+    r'(?:telefono|teléfono|celular|movil|móvil|numero de contacto|contacto|cel|telf|tlf)\D{0,20}(\d{10})',
+    re.IGNORECASE
+)
+
+# ✅ Números precedidos por contexto de referencia/código → ID_NUMERICO
+#    Evita que números de certificados, folios, etc. sean clasificados como CEDULA
+CONTEXTO_REFERENCIA = re.compile(
+    r'(?:certificado|código|codigo|referencia|folio|recibo|factura|orden|no\.?|#)\D{0,20}(\d{6,13})',
+    re.IGNORECASE
+)
+
+# Keywords para clasificar el type de respuesta
 KEYWORDS_NV  = ["navegación", "navegacion", "ubicación", "ubicacion", "menu", "menú",
                  "modulo", "módulo", "pagina", "página", "interfaz", "url", "link"]
 KEYWORDS_DLA = ["documentos", "documento", "obtener", "descargar", "solicitar", "leer",
@@ -62,14 +83,48 @@ def _fusionar_entidades(entidades: list) -> list:
 
 def _extraer_identificadores_regex(texto: str) -> list:
     encontrados = []
+
+    # ── RUC (13 dígitos) — primero para evitar colisión ──────────────────────
     for match in PATRON_RUC.finditer(texto):
         encontrados.append({'entidad': match.group(), 'tipo': 'RUC'})
-    for match in PATRON_CEDULA.finditer(texto):
-        if not any(e['entidad'] == match.group() for e in encontrados):
-            encontrados.append({'entidad': match.group(), 'tipo': 'CEDULA'})
+
+    # ✅ Contexto textual para desempate
+    cedulas_por_contexto   = {m.group(1) for m in CONTEXTO_CEDULA.finditer(texto)}
+    telefonos_por_contexto = {m.group(1) for m in CONTEXTO_TELEFONO.finditer(texto)}
+
+    # ── Números de 10 dígitos ─────────────────────────────────────────────────
+    for match in PATRON_10_DIGITOS.finditer(texto):
+        numero = match.group()
+        if any(e['entidad'] == numero for e in encontrados):
+            continue
+
+        es_cedula_valida = es_cedula_ecuatoriana(numero)
+
+        if es_cedula_valida and (numero in cedulas_por_contexto or numero not in telefonos_por_contexto):
+            # Pasa validación matemática; contexto de cédula tiene prioridad sobre teléfono
+            tipo = 'CEDULA'
+        elif not es_cedula_valida and numero in cedulas_por_contexto:
+            # Contexto dice que es cédula pero no pasa validación → marcar igual
+            # (podría ser un error de digitación, se respeta el contexto)
+            tipo = 'CEDULA'
+        elif numero in telefonos_por_contexto:
+            tipo = 'TELEFONO_CELULAR' if numero.startswith('09') else 'TELEFONO_CONVENCIONAL'
+        elif numero.startswith('09'):
+            # No pasa validación de cédula y empieza con 09 → celular
+            tipo = 'TELEFONO_CELULAR'
+        elif numero[0] == '0' and numero[1] in '2345678':
+            tipo = 'TELEFONO_CONVENCIONAL'
+        else:
+            tipo = 'ID_NUMERICO'
+
+        encontrados.append({'entidad': numero, 'tipo': tipo})
+
+    # ── Otros números largos (6+ dígitos) no capturados ──────────────────────
     for match in PATRON_NUM_LARGO.finditer(texto):
-        if not any(e['entidad'] == match.group() for e in encontrados):
-            encontrados.append({'entidad': match.group(), 'tipo': 'ID_NUMERICO'})
+        numero = match.group()
+        if not any(e['entidad'] == numero for e in encontrados):
+            encontrados.append({'entidad': numero, 'tipo': 'ID_NUMERICO'})
+
     return encontrados
 
 
@@ -119,7 +174,7 @@ class FlowRunner:
 
         entidades_fusionadas = _fusionar_entidades(entidades_con_pos)
 
-        # D. Identificadores numéricos con regex
+        # D. Identificadores numéricos con regex (CEDULA / TELEFONO / RUC)
         ids_regex = _extraer_identificadores_regex(texto)
         for id_regex in ids_regex:
             ya_existe = any(
@@ -144,7 +199,7 @@ class FlowRunner:
             for e in entidades_fusionadas
         ]
 
-        # ✅ F. Resolver type
+        # F. Resolver type
         response_type = _resolver_type(intencion_top, confianza_intencion)
 
         result = {
@@ -155,7 +210,8 @@ class FlowRunner:
         }
 
         model_response = {}
-        #bifurcacion de flujos
+
+        # G. Bifurcación de flujos
         match response_type:
             case "NV":
                 model_response = _ragHandler.rag_query(texto)
@@ -169,7 +225,7 @@ class FlowRunner:
                 }
 
         return {
-            "type":   response_type,
-            "result": result,
+            "type":          response_type,
+            "result":        result,
             "modelResponse": model_response
         }

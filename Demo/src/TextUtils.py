@@ -122,6 +122,42 @@ def convert_audio_to_wav(input_path: str, output_path: str) -> str:
     audio.export(output_path, format="wav")
     return output_path
 
+# ✅ Validación de cédula ecuatoriana mediante algoritmo de dígito verificador
+def es_cedula_ecuatoriana(numero: str) -> bool:
+    """
+    Valida si un número de 10 dígitos es una cédula ecuatoriana válida.
+
+    Reglas:
+      - Exactamente 10 dígitos numéricos.
+      - Los 2 primeros dígitos representan la provincia (01-24).
+      - El dígito 10 es el verificador, calculado con coeficientes [2,1,2,1,2,1,2,1,2]:
+          * Multiplicar cada dígito (1-9) por su coeficiente.
+          * Si el resultado >= 10, restar 9.
+          * Sumar todos los valores.
+          * Dígito verificador = (10 - (suma % 10)) % 10.
+
+    Returns:
+        True si es una cédula válida, False en caso contrario.
+    """
+    if len(numero) != 10 or not numero.isdigit():
+        return False
+
+    provincia = int(numero[:2])
+    if provincia < 1 or provincia > 24:
+        return False
+
+    coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2]
+    total = 0
+    for i, coef in enumerate(coeficientes):
+        valor = int(numero[i]) * coef
+        if valor >= 10:
+            valor -= 9
+        total += valor
+
+    digito_verificador = (10 - (total % 10)) % 10
+    return digito_verificador == int(numero[9])
+
+
 #Pipeline de normalizacion textual - limpieza de entrada
 def normalize_content(content: str) -> str:
     if not content:
@@ -144,12 +180,18 @@ def normalize_content(content: str) -> str:
     normalized_tokens = []
 
     for token in tokens:
-        # si es fecha → mantener
+        # si es fecha → mantener intacta
         if re.match(r'\d{4}-\d{2}-\d{2}', token):
             normalized_tokens.append(token)
             continue
 
-        # leet safe
+        # ✅ si es puramente numérico → mantener intacto
+        # Evita que LEET_MAP destruya cédulas, teléfonos y otros identificadores
+        if token.isdigit():
+            normalized_tokens.append(token)
+            continue
+
+        # leet safe (solo aplica a tokens de texto)
         token = ''.join(LEET_MAP.get(c, c) for c in token)
 
         # numeros en texto

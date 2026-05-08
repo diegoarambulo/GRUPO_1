@@ -7,7 +7,15 @@ from TextUtils import normalize_content, processVoiceWithGoogleApi, convert_audi
 from flowRunner import FlowRunner
 from modelHandlers import ModelHandlers
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("app.log", encoding="utf-8"),
+    ],
+)
 logger = logging.getLogger(__name__)
 
 # ✅ Modelo para la entrada de texto
