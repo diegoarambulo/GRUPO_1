@@ -1,5 +1,8 @@
+import logging
 import faiss
 from modelHandlers import ModelHandlers
+
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """
 Eres un asistente técnico especializado en la plataforma SISAD (Sistema de Administración Documental).
@@ -33,21 +36,30 @@ class RagHandlers:
         index       = ModelHandlers.get_faiss_index()
         all_chunks  = ModelHandlers.get_faiss_chunks()
 
-        # Embed la query
+        # Embed la query y normalizar igual que el notebook que construyó el índice
         q_emb = embed_model.encode([query]).astype('float32')
         faiss.normalize_L2(q_emb)
 
         # Buscar en FAISS
         scores, indices = index.search(q_emb, top_k)
 
+        logger.info("RAG retrieve | query='%s' | total_chunks=%d", query, len(all_chunks))
+        for score, idx in zip(scores[0], indices[0]):
+            if idx != -1:
+                source = all_chunks[idx].metadata.get('source', 'desconocido')
+                logger.info("  candidate | idx=%d | score=%.4f | source=%s | kept=%s",
+                            idx, score, source, score >= min_score)
+
         results = []
         for score, idx in zip(scores[0], indices[0]):
             if score >= min_score and idx != -1:
                 results.append({
                     'text':   all_chunks[idx].page_content,
-                    'source': all_chunks[idx].metadata['source'],
+                    'source': all_chunks[idx].metadata.get('source', 'desconocido'),
                     'score':  float(score)
                 })
+
+        logger.info("RAG retrieve | returned %d/%d chunks (min_score=%.2f)", len(results), top_k, min_score)
         return results
 
     @staticmethod

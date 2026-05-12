@@ -19,6 +19,7 @@ torch.set_num_interop_threads(1)
 
 import faiss
 import spacy
+from huggingface_hub import snapshot_download
 from sentence_transformers import SentenceTransformer
 from transformers import (
     pipeline,
@@ -36,10 +37,10 @@ HF_HOME = os.environ.get("HF_HOME", os.path.join(os.path.expanduser("~"), ".cach
 MODELO_INTENCION  = "vicgalle/xlm-roberta-large-xnli-anli"
 MODELO_NER        = "Babelscape/wikineural-multilingual-ner"
 MODELO_QWEN       = "Qwen/Qwen2.5-1.5B-Instruct"
-MODELO_EMBED      = "paraphrase-multilingual-MiniLM-L12-v2"
+MODELO_EMBED      = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 # ✅ Paths de los archivos FAISS — sobreescribibles por variable de entorno
-FAISS_INDEX_PATH  = os.environ.get("FAISS_INDEX_PATH",  "/app/.cache/rag_content/sisad_chunks.faiss")
+FAISS_INDEX_PATH  = os.environ.get("FAISS_INDEX_PATH",  "/app/.cache/rag_content/sisad_index.faiss")
 FAISS_CHUNKS_PATH = os.environ.get("FAISS_CHUNKS_PATH", "/app/.cache/rag_content/sisad_chunks.pkl")
 
 logger.info(f"📦 HF_HOME            : {HF_HOME}")
@@ -120,7 +121,7 @@ class ModelHandlers:
                 cls._qwen_model = AutoModelForCausalLM.from_pretrained(
                     MODELO_QWEN,
                     dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-                    device_map="auto",
+                    device_map="auto" if torch.cuda.is_available() else "cpu",
                     local_files_only=True,
                 )
                 cls._qwen_model.eval()
@@ -148,7 +149,9 @@ class ModelHandlers:
             # ── Modelo de Embeddings (SentenceTransformer) ────────────────────
             try:
                 logger.info(f"⏳ Cargando modelo de embeddings: {MODELO_EMBED}")
-                cls._embed_model = SentenceTransformer(MODELO_EMBED)
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                local_path = snapshot_download(MODELO_EMBED, local_files_only=True, cache_dir=HF_HOME)
+                cls._embed_model = SentenceTransformer(local_path, device=device)
                 logger.info("✅ Modelo de embeddings cargado.")
             except Exception as e:
                 logger.error(f"❌ Error al cargar modelo de embeddings: {e}")

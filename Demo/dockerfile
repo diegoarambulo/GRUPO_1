@@ -7,6 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     HF_HOME=/app/.cache/huggingface \
     TRANSFORMERS_CACHE=/app/.cache/huggingface \
+    SENTENCE_TRANSFORMERS_HOME=/app/.cache/huggingface \
     PIP_INDEX_URL=https://pypi.org/simple \
     PIP_TRUSTED_HOST="pypi.org files.pythonhosted.org" \
     SISSAD_FILE_URL="https://www.centralfile-sisadcloud.com:11431/api/file/filedynamicsearch" \
@@ -53,10 +54,12 @@ RUN pip install torch \
 
 RUN python -m spacy download es_core_news_lg
 
-
 COPY src/ /app/src/
+
+# ✅ Crear carpetas de caché con permisos abiertos
+RUN mkdir -p /app/.cache/huggingface /app/.cache/rag_content && \
+    chmod -R 777 /app/.cache
 
 EXPOSE 8000
 
-# ✅ El archivo ejecutable es ngrokHandler.py dentro de src
 CMD ["python", "src/ngrokHandler.py"]

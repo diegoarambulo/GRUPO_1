@@ -35,12 +35,24 @@ CONTEXTO_REFERENCIA = re.compile(
 
 # Keywords para clasificar el type de respuesta
 KEYWORDS_NV  = ["navegación", "navegacion", "ubicación", "ubicacion", "menu", "menú",
-                 "modulo", "módulo", "pagina", "página", "interfaz", "url", "link"]
+                 "modulo", "módulo", "pagina", "página", "interfaz", "url", "link",
+                 "api", "request"]
 KEYWORDS_DLA = ["documentos", "documento", "obtener", "descargar", "solicitar", "leer",
                  "buscar", "planilla", "expediente", "recibo", "contrato", "certificado"]
 
+PATRON_PREGUNTA = re.compile(
+    r'^\s*(?:qué|que|cómo|como|dónde|donde|cuándo|cuando|cuál|cual|quién|quien|cuánto|cuanto)\b'
+    r'|'
+    r'\?\s*$',
+    re.IGNORECASE,
+)
 
-def _resolver_type(intencion: str, confianza: float) -> str:
+
+def _es_pregunta(texto: str) -> bool:
+    return bool(PATRON_PREGUNTA.search(texto))
+
+
+def _resolver_type(intencion: str, confianza: float, texto: str = "") -> str:
     """
     Determina el type según la intención detectada y su confianza.
     - None  → no se detectó intención clara (confianza baja)
@@ -48,6 +60,13 @@ def _resolver_type(intencion: str, confianza: float) -> str:
     - 'DLA' → descarga / búsqueda de archivos
     """
     UMBRAL_CONFIANZA = 0.4
+    texto_lower = texto.lower()
+
+    if _es_pregunta(texto):
+        return "NV"
+
+    if any(k in texto_lower for k in KEYWORDS_NV):
+        return "NV"
 
     if not intencion or confianza < UMBRAL_CONFIANZA:
         return None
@@ -200,7 +219,7 @@ class FlowRunner:
         ]
 
         # F. Resolver type
-        response_type = _resolver_type(intencion_top, confianza_intencion)
+        response_type = _resolver_type(intencion_top, confianza_intencion, texto)
 
         result = {
             "intencion_detectada": intencion_top,

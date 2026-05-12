@@ -22,9 +22,6 @@ logger = logging.getLogger(__name__)
 class TextQuery(BaseModel):
     text: str
 
-# ✅ lifespan reemplaza @app.on_event("startup") — es el estándar moderno de FastAPI
-#    Los modelos se cargan UNA SOLA VEZ cuando arranca uvicorn en el thread principal,
-#    ANTES de que cualquier request llegue. Esto evita el error de futures.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("🚀 Iniciando aplicación — cargando modelos...")
@@ -82,13 +79,12 @@ async def search_by_voice(audio_file: UploadFile = File(...)):
         return {"message": f"Error al convertir el audio: {str(e)}", "filename": audio_file.filename, "results": []}
 
     transcription = processVoiceWithGoogleApi(wav_file_location)
-    transcription = normalize_content(transcription)
+    #transcription = normalize_content(transcription)
     resultado = _flow_runner.procesar_consulta(transcription)
 
     return {
-        "message": transcription,
-        "filename": audio_file.filename,
-        "size": audio_file.size,
-        "resultado": resultado,
-        "results": []
+        "query": transcription,
+        "resultado": resultado["result"],
+        "tipo": resultado["type"],
+        "modelResponse": resultado["modelResponse"],
     }
