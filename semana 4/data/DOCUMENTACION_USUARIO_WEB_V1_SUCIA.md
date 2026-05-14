@@ -29,16 +29,6 @@ SISAD Web es una aplicación diseñada para:
 
 ---
 
-## 🌐 2.1. Descripcion de los autos que usan en la empresa
-
-SISAD Web es una aplicación diseñada para:
-
-* Almacenar documentos digitales
-* Organizar información mediante índices (metadatos)
-* Gestionar documentos vía web
-* Clasificar información por fechas, carpetas y estructuras jerárquicas
-
----
 
 ## ⚙️ 3. Requisitos del Sistema
 
@@ -290,7 +280,7 @@ Permite visualizar archivos asociados a un registro.
 
 ---
 
-### 📤 Subida de Archivo0000000000000000ss
+### 📤 Subida de Archivos
 
 #### Individual
 
@@ -304,7 +294,6 @@ Permite visualizar archivos asociados a un registro.
 
 ---
 
-## 📑 12. Paginación
 ## 📑 12. Paginación
 
 Permite:
@@ -355,15 +344,6 @@ Siempre visibles:
 
 ---
 
-## 📌 16. Recomendaciones
-
-* Validar metadata antes de subir
-* Usar formatos correctos de fecha
-* Evitar eliminar registros activos
-* Usar filtros para optimizar búsquedas
-
----
-
 ## 📌 17. Conclusión
 
 SISAD Web permite gestionar documentos de manera eficiente mediante herramientas de:
@@ -382,86 +362,3 @@ Su correcto uso garantiza orden, trazabilidad y acceso rápido a la información
 Las imágenes utilizadas son representaciones referenciales del sistema. La interfaz real puede variar según configuración del cliente.
 
 ---
-
-
-## 🚗 Modelos de Vehículos Disponibles en la empresa
-
-A continuación, se describen tres de los principales modelos de vehículos disponibles en la empresa, incluyendo sus características generales y una imagen referencial.
-![Image](https://previews.123rf.com/images/wavebreakmediamicro/wavebreakmediamicro1511/wavebreakmediamicro151102274/47445792-outside-view-of-car-dealership-at-new-car-showroom.jpg)
-
----
-
-### 1. Toyota Corolla
-
-**Descripción:**
-El Toyota Corolla es un sedán compacto reconocido a nivel mundial por su confiabilidad, eficiencia de combustible y bajo costo de mantenimiento. Es ideal para uso urbano y empresarial.
-
-**Características principales:**
-
-* Motor: 1.6L – 2.0L
-* Potencia aproximada: 139 HP ([iSeeCars][1])
-* Transmisión: Manual o automática CVT
-* Capacidad: 5 pasajeros
-* Tipo de combustible: Gasolina
-* Enfoque: Uso urbano y ejecutivo
-
----
-
-### 2. Ford Ranger
-
-**Descripción:**
-La Ford Ranger es una camioneta tipo pickup diseñada para trabajos exigentes y terrenos difíciles. Combina potencia, tecnología y capacidad de carga.
-
-**Características principales:**
-
-* Motor: 2.0L – 3.2L (diésel en muchas versiones)
-* Tracción: 4x2 / 4x4
-* Capacidad: 5 pasajeros
-* Alta capacidad de carga y remolque
-* Uso: Trabajo pesado y off-road
-
-**Nota técnica:**
-Este tipo de vehículo presenta mayores dimensiones y altura respecto a autos compactos, lo que mejora su desempeño en terrenos irregulares ([Carsized.com][2])
-
----
-
-### 3. Chevrolet Spark GT
-
-**Descripción:**
-El Chevrolet Spark GT es un vehículo hatchback compacto, económico y eficiente, ideal para desplazamientos urbanos y uso cotidiano.
-
-**Características principales:**
-
-* Motor: 1.2L DOHC
-* Potencia: ~80 HP ([Chevrolet Ecuador][3])
-* Transmisión: Manual de 5 velocidades
-* Capacidad: 5 pasajeros
-* Bajo consumo de combustible
-* Equipamiento: Sistema multimedia con pantalla táctil
-
-**Ventajas:**
-
-* Fácil maniobrabilidad en ciudad
-* Bajo costo operativo
-* Tamaño compacto ideal para espacios reducidos
-
----
-
-### 📌 Observación General
-
-Los modelos presentados cubren diferentes necesidades operativas:
-
-* **Sedán (Corolla):** comodidad y eficiencia
-* **Pickup (Ranger):** potencia y trabajo pesado
-* **Hatchback (Spark):** economía y movilidad urbana
-
-Esto permite a la empresa adaptarse a distintos escenarios de uso, desde transporte ejecutivo hasta logística operativa.
-
----
-
-Si quieres, puedo adaptar esta sección a **formato aún más técnico (tipo ficha API o JSON para tu sistema)** o alinearla exactamente al diseño de tu PDF original.
-
-[1]: https://www.iseecars.com/compare/toyota-corolla-vs-chevrolet-spark?utm_source=chatgpt.com "Toyota Corolla vs. Chevrolet Spark - iSeeCars.com"
-[2]: https://www.carsized.com/en/cars/compare/chevrolet-spark-2012-5-door-hatchback-vs-ford-ranger-2011-4-door-pickup/?utm_source=chatgpt.com "Dimensions: Chevrolet Spark 2012-2014 vs. Ford Ranger 2011-2019"
-[3]: https://www.chevrolet.com.ec/content/dam/chevrolet/south-america/ecuador/espanol/index/cars/spark-gt/02-pdfs/ficha-tecnica-spark-gt-abril-v2.pdf?utm_source=chatgpt.com "CHEVROLET SPARK GT"
-

@@ -15,7 +15,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     SISSAD_FILE_READ_TIMEOUT=30 \
     TOKENIZERS_PARALLELISM=false \
     OMP_NUM_THREADS=1 \
-    MKL_NUM_THREADS=1
+    MKL_NUM_THREADS=1 \
+    SSL_KEYFILE="" \
+    SSL_CERTFILE=""
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc g++ curl libgomp1 ca-certificates ffmpeg \

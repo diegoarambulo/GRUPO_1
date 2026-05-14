@@ -33,6 +33,41 @@ CONTEXTO_REFERENCIA = re.compile(
     re.IGNORECASE
 )
 
+RESPUESTA_OFENSIVA = "Lo siento, no puedo ayudarte con tu solicitud."
+
+PALABRAS_OFENSIVAS = [
+    "idiota", "imbecil", "imbécil", "estupido", "estúpido", "maldito",
+    "puta", "puto", "carajo", "mierda", "coño", "pendejo", "verga",
+    "cabron", "cabrón", "bastardo", "hdp", "hijueputa", "malparido",
+    "marica", "maricon", "maricón", "negro de mierda", "indio de mierda",
+]
+
+
+def _es_contenido_ofensivo(texto: str) -> bool:
+    import logging
+    _log = logging.getLogger(__name__)
+
+    texto_lower = texto.lower()
+
+    # ── Capa A: lista de palabras ─────────────────────────────────────────────
+    if any(p in texto_lower for p in PALABRAS_OFENSIVAS):
+        _log.info("Toxicidad detectada por lista de palabras")
+        return True
+
+    # ── Capa B: robertuito-hate-speech (español) ──────────────────────────────
+    ETIQUETAS_OFENSIVAS = {"hateful", "targeted", "aggressive"}
+    try:
+        clasificador = ModelHandlers.get_clasificador_toxicidad()
+        resultado = clasificador(texto, truncation=True, max_length=512)[0]
+        _log.info("Toxicidad ML | label=%s | score=%.4f", resultado['label'], resultado['score'])
+        if resultado['label'].lower() in ETIQUETAS_OFENSIVAS and resultado['score'] >= 0.6:
+            return True
+    except Exception as e:
+        _log.warning("Clasificador de toxicidad no disponible: %s", e)
+
+    return False
+
+
 # Keywords para clasificar el type de respuesta
 KEYWORDS_NV  = ["navegación", "navegacion", "ubicación", "ubicacion", "menu", "menú",
                  "modulo", "módulo", "pagina", "página", "interfaz", "url", "link",
@@ -82,6 +117,18 @@ def _resolver_type(intencion: str, confianza: float, texto: str = "") -> str:
     return None
 
 
+def _normalizar_numeros_espaciados(texto: str) -> str:
+    """Colapsa grupos de dígitos separados por espacios que sumen 10 o 13 dígitos.
+    Ej: '095 389 550' -> '0953895500'  (cédula dictada por voz)
+    """
+    def colapsar(m):
+        sin_espacios = re.sub(r'\s+', '', m.group())
+        if len(sin_espacios) in (10, 13):
+            return sin_espacios
+        return m.group()
+    return re.sub(r'\b\d+(?:\s+\d+)+\b', colapsar, texto)
+
+
 def _fusionar_entidades(entidades: list) -> list:
     if not entidades:
         return []
@@ -101,6 +148,7 @@ def _fusionar_entidades(entidades: list) -> list:
 
 
 def _extraer_identificadores_regex(texto: str) -> list:
+    texto = _normalizar_numeros_espaciados(texto)
     encontrados = []
 
     # ── RUC (13 dígitos) — primero para evitar colisión ──────────────────────
@@ -155,6 +203,15 @@ class FlowRunner:
         print("FlowRunner inicializado y listo para usar los modelos.")
 
     def procesar_consulta(self, texto: str):
+
+        if _es_contenido_ofensivo(texto):
+            import logging
+            logging.getLogger(__name__).warning("Contenido ofensivo detectado | texto='%s'", texto)
+            return {
+                "type":          None,
+                "result":        {"mensaje": RESPUESTA_OFENSIVA},
+                "modelResponse": {},
+            }
 
         global _ragHandler
         global _documentHandler

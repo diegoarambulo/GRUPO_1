@@ -16,18 +16,6 @@ Esta documentación detalla el uso del endpoint `/api/file/filedynamicsearch` pa
 
 ---
 
-## 📌 Mision de la empresa
-
-* **Contenido:** Proveer soluciones tecnológicas innovadoras para la gestión documental que permitan a las organizaciones optimizar sus procesos, garantizar la seguridad de la información y mejorar la eficiencia operativa mediante herramientas digitales accesibles, escalables y confiables.
-
----
-
-## 📌 Vision de la empresa
-
-* **Contenido:** Ser una empresa líder en soluciones de gestión documental a nivel regional, reconocida por su innovación, calidad y capacidad de transformar digitalmente a las organizaciones, impulsando entornos más eficientes, sostenibles y orientados a datos.
-
----
-
 ## 📥 Estructura del Request
 
 El request consiste en un **array de objetos**, donde cada objeto define un criterio de búsqueda.
@@ -82,21 +70,7 @@ El request consiste en un **array de objetos**, donde cada objeto define un crit
 
 ---
 
-## 🏢 Infraestructura Corporativa
-
-Nuestra empresa cuenta con modernas instalaciones diseñadas para fomentar la innovación, la colaboración y el desarrollo tecnológico. A lo largo de los años, la infraestructura ha evolucionado para reflejar nuestro compromiso con la excelencia y la transformación digital.
-
-### 📸 Edificio Corporativo Principal
-
-![Image](https://static.wixstatic.com/media/21927d_bf62bd8fb4b04a2cb26a3b7ead85812d~mv2.webp/v1/fill/w_980%2Ch_653%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_avif%2Cquality_auto/21927d_bf62bd8fb4b04a2cb26a3b7ead85812d~mv2.webp)
-
-![Image](https://in.saint-gobain-glass.com/sites/in.saint-gobain-glass.com/files/styles/node_blog_image/public/2025-06/Glass%20facades.jpg?itok=kR4u2m_J)
-
-El edificio principal representa nuestra identidad como empresa tecnológica: estructuras modernas, fachadas de vidrio y espacios abiertos que promueven la transparencia, la eficiencia y el trabajo colaborativo. Este tipo de arquitectura es común en organizaciones tecnológicas debido a su enfoque en iluminación natural, eficiencia energética y estética corporativa contemporánea. ([Pexels][1])
-
----
-
-## 📘 Ejemplos de Requessssssssssssssstttttttttttt
+## 📘 Ejemplos de Request
 
 ### 🔹 Ejemplo 1
 
@@ -159,8 +133,6 @@ Busca archivos:
   * Descripción
   * Tipo de archivo
 
-Perfecto, aquí tienes la sección corregida con **tu ejemplo real de respuesta exitosa** en lugar del genérico:
-
 ---
 
 ## 📤 Estructura del Response
@@ -209,8 +181,6 @@ Perfecto, aquí tienes la sección corregida con **tu ejemplo real de respuesta 
 | Campo        | Descripción                         |
 | ------------ | ----------------------------------- |
 | id           | Identificador único del archivo     |
-| id           | Identificador único del archivo     |
-| id           | Identificador único del archivo     |
 | name         | Nombre del archivo                  |
 | description  | Descripción del archivo             |
 | extension    | Extensión del archivo               |
@@ -249,10 +219,10 @@ Perfecto, aquí tienes la sección corregida con **tu ejemplo real de respuesta 
 
 ---
 
-## 🧪 Ejemplo de Consumo con cURL @@@##$$%%^^&&&&&&&
+## 🧪 Ejemplo de Consumo con cURL
 
 ```bash
-curl -X GET "http://localhost:8080/documents/searchAll" \
+curl -X GET "https://www.centralfile-sisadcloud.com:11431/api/file/filedynamicsearch" \
 -H "Content-Type: application/json" \
 -d '[
   {
@@ -277,16 +247,3 @@ curl -X GET "http://localhost:8080/documents/searchAll" \
 * Se recomienda validar correctamente los valores del enumerado antes de enviar la solicitud.
 * Las fechas deben enviarse en formato `YYYY-MM-DD`.
 
----
-
-## 🏢 Historia de la Empresa
-
-La historia de la compañía se remonta a la década de 1970, en un contexto donde la tecnología apenas comenzaba a abrirse paso en el mundo empresarial. Su fundador, un joven emprendedor con una visión clara sobre el potencial de la organización documental, inició operaciones con un capital modesto obtenido mediante un préstamo personal, apostándolo todo a una idea que en ese momento parecía adelantada a su tiempo.
-
-En sus primeros años, la empresa enfrentó múltiples desafíos: recursos limitados, infraestructura precaria y un mercado que aún no comprendía el valor de sistematizar la información. Sin embargo, gracias a la perseverancia, disciplina y una firme convicción en la calidad del trabajo, logró consolidarse como un proveedor confiable en soluciones documentales tradicionales.
-
-Con la llegada de la segunda generación, la empresa experimentó una transformación clave. Se adoptaron las primeras tecnologías digitales, migrando de procesos físicos a sistemas informatizados. Este cambio no solo permitió modernizar los servicios, sino también establecer nuevos estándares internos de calidad, orientados a la precisión, trazabilidad y seguridad de la información.
-
-En la actualidad, bajo la dirección de la tercera generación, la organización ha evolucionado hacia una empresa tecnológica consolidada, especializada en soluciones avanzadas de gestión documental y desarrollo de software. Su enfoque se centra en la innovación continua, la automatización inteligente y la integración de herramientas digitales que responden a las necesidades actuales del mercado.
-
-A lo largo de más de cinco décadas, la empresa ha demostrado que la resiliencia, la adaptación y el compromiso con la excelencia son pilares fundamentales para trascender generaciones. Hoy, no solo mantiene el legado de sus fundadores, sino que también ha logrado redefinir los estándares de calidad en el desarrollo de software y gestión documental, posicionándose como un referente en el sector.

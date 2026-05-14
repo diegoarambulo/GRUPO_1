@@ -2,6 +2,7 @@ import os
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from TextUtils import normalize_content, processVoiceWithGoogleApi, convert_audio_to_wav
 from flowRunner import FlowRunner
@@ -35,6 +36,14 @@ app = FastAPI(
     description="API para buscar documentos por texto o voz.",
     lifespan=lifespan,
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ✅ FlowRunner se instancia UNA SOLA VEZ al arrancar, no en cada request
 _flow_runner: FlowRunner = None

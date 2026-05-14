@@ -1,3 +1,4 @@
+import os
 from pyngrok import ngrok
 import uvicorn
 
@@ -22,9 +23,14 @@ if ngrok_auth_token != "TU_TOKEN_AQUI":
 # ✅ CRÍTICO: uvicorn.run() debe correr en el thread PRINCIPAL, no en un thread secundario.
 #    Esto evita el error "cannot schedule new futures after interpreter shutdown"
 #    cuando transformers intenta crear threads durante la carga de modelos.
+ssl_keyfile  = os.environ.get("SSL_KEYFILE")
+ssl_certfile = os.environ.get("SSL_CERTFILE")
+
 uvicorn.run(
     "main:app",
     host="0.0.0.0",
     port=8000,
     log_level="info",
+    ssl_keyfile=ssl_keyfile or None,
+    ssl_certfile=ssl_certfile or None,
 )

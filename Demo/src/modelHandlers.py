@@ -38,6 +38,7 @@ MODELO_INTENCION  = "vicgalle/xlm-roberta-large-xnli-anli"
 MODELO_NER        = "Babelscape/wikineural-multilingual-ner"
 MODELO_QWEN       = "Qwen/Qwen2.5-1.5B-Instruct"
 MODELO_EMBED      = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+MODELO_TOXICIDAD  = "pysentimiento/robertuito-hate-speech"
 
 # ✅ Paths de los archivos FAISS — sobreescribibles por variable de entorno
 FAISS_INDEX_PATH  = os.environ.get("FAISS_INDEX_PATH",  "/app/.cache/rag_content/sisad_index.faiss")
@@ -55,6 +56,7 @@ class ModelHandlers:
     _nlp_final              = None
     _clasificador_intencion = None
     _extractor_ner          = None
+    _clasificador_toxicidad = None
     _qwen_model             = None
     _qwen_tokenizer         = None
     _faiss_index            = None
@@ -128,6 +130,22 @@ class ModelHandlers:
                 logger.info("✅ Qwen2.5-1.5B-Instruct cargado.")
             except Exception as e:
                 logger.error(f"❌ Error al cargar Qwen: {e}")
+
+            # ── Clasificador de Toxicidad ─────────────────────────────────────
+            try:
+                logger.info(f"⏳ Cargando clasificador de toxicidad: {MODELO_TOXICIDAD}")
+                tok = AutoTokenizer.from_pretrained(MODELO_TOXICIDAD, local_files_only=True)
+                mod = AutoModelForSequenceClassification.from_pretrained(MODELO_TOXICIDAD, local_files_only=True)
+                cls._clasificador_toxicidad = pipeline(
+                    "text-classification",
+                    model=mod,
+                    tokenizer=tok,
+                    device=-1,
+                    num_workers=0,
+                )
+                logger.info("✅ Clasificador de toxicidad cargado.")
+            except Exception as e:
+                logger.error(f"❌ Error al cargar clasificador de toxicidad: {e}")
 
             # ── FAISS Index ───────────────────────────────────────────────────
             try:
@@ -224,3 +242,11 @@ class ModelHandlers:
         if cls._embed_model is None:
             raise RuntimeError(f"Modelo de embeddings '{MODELO_EMBED}' no pudo ser cargado.")
         return cls._embed_model
+
+    @classmethod
+    def get_clasificador_toxicidad(cls):
+        if not cls._modelos_cargados:
+            cls.load_models()
+        if cls._clasificador_toxicidad is None:
+            raise RuntimeError(f"Clasificador de toxicidad '{MODELO_TOXICIDAD}' no pudo ser cargado.")
+        return cls._clasificador_toxicidad
