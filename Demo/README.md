@@ -33,7 +33,7 @@ El portal está disponible en:
 
 Descarga el archivo RAR con los modelos preentrenados desde:
 
-**[http://miurl.prueba.com/eorigneoigneoir](http://miurl.prueba.com/eorigneoigneoir)**
+**[https://drive.google.com/file/d/1netmwZlUFtSRovn3Mz3X9-Y9IgKht-ZL/view?usp=sharing](https://drive.google.com/file/d/1netmwZlUFtSRovn3Mz3X9-Y9IgKht-ZL/view?usp=sharing)**
 
 Descomprime el contenido **dentro de la carpeta `hf_cache`** en el directorio raíz del proyecto:
 
