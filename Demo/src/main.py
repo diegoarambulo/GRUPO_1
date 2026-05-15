@@ -19,6 +19,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ✅ Flag de normalización: controla si se aplica normalize_content antes de procesar.
+# Valores: "true" activa la normalización, cualquier otro valor la desactiva.
+# Por defecto desactivado para preservar acentos y mayúsculas que requiere el NER.
+# Ejemplo de activación: NORMALIZE_INPUT=true uvicorn main:app
+NORMALIZE_INPUT: bool = os.environ.get("NORMALIZE_INPUT", "false").lower() == "true"
+logger.info("🔧 NORMALIZE_INPUT: %s", NORMALIZE_INPUT)
+
+
+def _preparar_texto(texto: str) -> str:
+    """Aplica normalización si NORMALIZE_INPUT está activo, de lo contrario retorna el texto intacto."""
+    if NORMALIZE_INPUT:
+        normalizado = normalize_content(texto)
+        logger.info("Normalización aplicada | original='%s' | normalizado='%s'", texto, normalizado)
+        return normalizado
+    return texto
+
 # ✅ Modelo para la entrada de texto
 class TextQuery(BaseModel):
     text: str
@@ -56,8 +72,7 @@ async def search_by_text(query: TextQuery):
         _flow_runner = FlowRunner()
 
     logger.info(f"Recibida solicitud de búsqueda por texto: {query.text}")
-    #normalized_text = normalize_content(query.text)
-    normalized_text = query.text
+    normalized_text = _preparar_texto(query.text)
 
     response = _flow_runner.procesar_consulta(normalized_text)
 
@@ -88,7 +103,7 @@ async def search_by_voice(audio_file: UploadFile = File(...)):
         return {"message": f"Error al convertir el audio: {str(e)}", "filename": audio_file.filename, "results": []}
 
     transcription = processVoiceWithGoogleApi(wav_file_location)
-    #transcription = normalize_content(transcription)
+    transcription = _preparar_texto(transcription)
     resultado = _flow_runner.procesar_consulta(transcription)
 
     return {

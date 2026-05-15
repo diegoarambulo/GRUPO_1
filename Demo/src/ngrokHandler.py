@@ -8,9 +8,9 @@ import uvicorn
 # Cierra cualquier túnel ngrok existente
 ngrok.kill()
 
-ngrok_auth_token = "3C6RbXVl84G8wT75IufyBXPhwv2_3moCnsaWpVueFRL9g8AsR"
+ngrok_auth_token = os.environ.get("NGROK_AUTH_TOKEN", "")
 
-if ngrok_auth_token != "TU_TOKEN_AQUI":
+if ngrok_auth_token:
     ngrok.set_auth_token(ngrok_auth_token)
 
     try:

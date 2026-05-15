@@ -296,9 +296,7 @@ class FlowRunner:
                 model_response = _documentHandler.call_document_service(entidades_limpias)
 
             case _:
-                model_response = {
-                    "error": f"Tipo de respuesta no soportado: {response_type}"
-                }
+                model_response = {"mensaje": "No pude entender tu consulta con claridad. ¿Podrías reformularla?"}
 
         return {
             "type":          response_type,
