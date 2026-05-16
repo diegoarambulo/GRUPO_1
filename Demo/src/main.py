@@ -19,12 +19,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ✅ Flag de normalización: controla si se aplica normalize_content antes de procesar.
-# Valores: "true" activa la normalización, cualquier otro valor la desactiva.
-# Por defecto desactivado para preservar acentos y mayúsculas que requiere el NER.
-# Ejemplo de activación: NORMALIZE_INPUT=true uvicorn main:app
+# ── Normalización de entrada ──────────────────────────────────────────────────
+# Controla si se aplica normalize_content() antes de procesar cada consulta.
+# Por defecto DESACTIVADO para preservar acentos y mayúsculas que requiere el NER.
+#
+# Para activar:  NORMALIZE_INPUT=true  uvicorn main:app
+# Para desactivar (default): omitir la variable o NORMALIZE_INPUT=false
+#
 NORMALIZE_INPUT: bool = os.environ.get("NORMALIZE_INPUT", "false").lower() == "true"
-logger.info("🔧 NORMALIZE_INPUT: %s", NORMALIZE_INPUT)
+logger.info("🔧 NORMALIZE_INPUT: %s — normalización de texto %s",
+            NORMALIZE_INPUT, "ACTIVADA" if NORMALIZE_INPUT else "DESACTIVADA")
 
 
 def _preparar_texto(texto: str) -> str:
